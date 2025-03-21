@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="/styles/main.css">
+
 </head>
 <body>
-    <h1>HELLO</h1>
-    <form action="/getBook" method="post">
-        <input name="book" id="bookId" ></input>
-        <button>submit</button>
-       
-    </form>
+    <%- include('partials/header.ejs') %>
+    <h1><%=name%></h1>
+    <p><%=review%></p>
     <% if (locals.image) { %>
-        <img src =" <%= image %>" alt="book cover" >
+        <img src ="<%= image %>" alt="book cover" >
    <% } %>
 </body>
 </html>
