@@ -9,10 +9,79 @@
 </head>
 <body>
     <%- include('partials/header.ejs') %>
-    <h1><%=name%></h1>
-    <p><%=review%></p>
-    <% if (locals.image) { %>
-        <img src ="<%= image %>" alt="book cover" >
-   <% } %>
+    <form action="/new" method="get">
+        <button>Review new book</button>
+    </form>
+
+    <% response.forEach(value => { %>
+        <h1 id="title<%=value.id%>"><%= value.book_name %></h1>
+        <p><%= value.review %></p>
+        <img src="<%= value.cover %>" >
+   
+        <form action="/delete" method="post">
+            <input type="hidden" name="deleteItemId" value="<%= value.id %>">
+            <button type="submit">Delete</button>
+        </form>
+        
+        
+        <form class="edit" action="/edit" method="post">
+            <input type="hidden" name="editItemId" value="<%= value.id %>">
+            
+            <!-- Textarea for editing review -->
+            <textarea id="input<%=value.id%>" name="editReview" class="hidden edit-textarea"
+                oninput="autoResize(this)"><%= value.review %></textarea>
+            
+            <button id="done<%=value.id%>" class="edit-btn hidden" type="submit">✅ Save</button>
+        </form>
+        
+        <!-- Edit button -->
+        <button id="edit<%=value.id%>" class="edit-btn" onclick="toggleEdit('<%=value.id%>')">
+            ✏️ Edit
+        </button>
+        
+        
+        
+  
+        
+    <% }) %>
+    
+    <script>
+        // function handler(id) {
+        //   document.getElementById("title" + id).setAttribute("hidden", true)
+        //   document.getElementById("edit" + id).setAttribute("hidden", true)
+        //   document.getElementById("done" + id).removeAttribute("hidden")
+        //   document.getElementById("input" + id).removeAttribute("hidden")
+        // }
+        function toggleEdit(id) {
+    let title = document.getElementById("title" + id);
+    let editBtn = document.getElementById("edit" + id);
+    let textarea = document.getElementById("input" + id);
+    let saveBtn = document.getElementById("done" + id);
+
+    let isEditing = !textarea.classList.contains("hidden");
+
+    if (isEditing) {
+        // Cancel editing
+        title.classList.remove("hidden");
+        textarea.classList.add("hidden");
+        saveBtn.classList.add("hidden");
+        editBtn.innerText = "✏️ Edit";
+    } else {
+        // Start editing
+        title.classList.add("hidden");
+        textarea.classList.remove("hidden");
+        saveBtn.classList.remove("hidden");
+        editBtn.innerText = "❌ Cancel";
+        autoResize(textarea);
+    }
+}
+
+function autoResize(textarea) {
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+}
+
+
+      </script>
 </body>
 </html>

@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 db.connect()
 
-async function getCover(name) {
+async function getCover(name, bookId) {
     const words = name.split(" ");
     const title = words.join("+"); 
 
@@ -36,7 +36,7 @@ async function getCover(name) {
         }
         const image = `https://covers.openlibrary.org/b/olid/${imageOlid}-S.jpg`;
         
-        await updateBookCover(image); 
+        await updateBookCover(image, bookId); 
         return image;
     } catch (err) {
         console.log(err);
@@ -45,13 +45,13 @@ async function getCover(name) {
 }
 
 // Function to update the book cover in the database
-async function updateBookCover(imageUrl) {
+async function updateBookCover(imageUrl, bookId) {
     try {
-        const result = await db.query(
+        await db.query(
             `UPDATE book_review
              SET cover = $1
-             WHERE id = 2`, 
-            [imageUrl]
+             WHERE id = $2`, 
+            [imageUrl, bookId]
         );
         console.log('Cover updated successfully');
     } catch (err) {
@@ -60,33 +60,61 @@ async function updateBookCover(imageUrl) {
 }
 app.get("/", async(req,res) => {
     try {
-        const response = await db.query("SELECT book_name FROM book_review");
-        const name = response.rows[0].book_name;
+        const books = await db.query("SELECT * FROM book_review");
+        await Promise.all(books.rows.map(async (book) => {
+            if (book.cover == null){
+            await getCover(book.book_name, book.id);}
+        }));
 
         const result = await db.query("SELECT * FROM book_review");
-        console.log(result.rows)
-
-        const review = result.rows[0].review;
-        let cover = result.rows[0].cover;
-
-        if (!cover) {
-            const image = await getCover(name);
-            cover = image; 
-        }
 
         res.render('index.ejs', {
-            name: name,
-            review: review,
-            image: cover
+            response:result.rows,
         });
     } catch (err) {
         console.log(err);
-        res.sendStatus(504);  
+        res.sendStatus(502);  
 }});
 
-app.post('/getBook', async(req,res) =>{
+app.get('/new', (req,res) =>{
+    res.render('new.ejs')
    
 })
+app.post('/add_new', async (req,res) => {
+    try{
+    const title = req.body.input_title
+    const review = req.body.input_review
+    const result = await db.query ("insert into book_review(book_name, review) values ($1, $2)", [title, review])
+    res.redirect('/')
+    } catch(err){
+        console.log("Error sending data" , err)
+        res.sendStatus(502)
+    }
+})
+app.post("/delete", async (req,res) =>{
+    const id = req.body.deleteItemId;
+    console.log(id)
+    try{
+    await db.query('delete from book_review where id = $1', [id])
+    res.redirect('/')
+    } catch (err){
+            res.sendStatus(502)
+    }
+} )
+app.post("/edit", async (req,res) =>{
+    const id = req.body.editItemId;
+    const review = req.body.editReview
+    console.log(id, '  ', review)
+    if (!id || !review) {
+        return res.status(400).send("Missing ID or review"); // Error handling
+    }
+    try{
+    await db.query('update book_review set review = $1 where id = $2', [review, id])
+    res.redirect('/')
+    } catch (err){
+            res.sendStatus(502)
+    }
+} )
 app.listen(port,() =>{
     console.log(`server working on http://localhost:${port}`)
 })
