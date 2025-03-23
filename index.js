@@ -53,7 +53,6 @@ async function updateBookCover(imageUrl, bookId) {
              WHERE id = $2`, 
             [imageUrl, bookId]
         );
-        console.log('Cover updated successfully');
     } catch (err) {
         console.log('Error updating cover:', err);
     }
@@ -84,16 +83,41 @@ app.post('/add_new', async (req,res) => {
     try{
     const title = req.body.input_title
     const review = req.body.input_review
-    const result = await db.query ("insert into book_review(book_name, review) values ($1, $2)", [title, review])
+    const date = new Date()
+    const month = date.getUTCMonth() + 1
+    const day = date.getUTCDate()
+    const year = date.getUTCFullYear()
+    const post_date = day + '/' + month + '/' + year
+    const result = await db.query ("insert into book_review(book_name, review, post_date) values ($1, $2, $3)", [title, review, post_date])
+    
     res.redirect('/')
     } catch(err){
         console.log("Error sending data" , err)
         res.sendStatus(502)
     }
 })
+
+app.get('/post/:id', async (req, res) => {
+    const id = req.params.id; 
+    try {
+     
+        const result = await db.query('SELECT * FROM book_review WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).send('Review not found');
+        }
+        const response = result.rows[0];
+
+        
+        res.render('post.ejs', {
+           response: response
+        });
+    } catch (err) {
+        console.log('Error fetching review:', err);
+        res.sendStatus(500);
+    }
+});
 app.post("/delete", async (req,res) =>{
     const id = req.body.deleteItemId;
-    console.log(id)
     try{
     await db.query('delete from book_review where id = $1', [id])
     res.redirect('/')
@@ -102,11 +126,10 @@ app.post("/delete", async (req,res) =>{
     }
 } )
 app.post("/edit", async (req,res) =>{
-    const id = req.body.editItemId;
-    const review = req.body.editReview
-    console.log(id, '  ', review)
+    const id = req.body.updatedItemId;
+    const review = req.body.updatedItemTitle
     if (!id || !review) {
-        return res.status(400).send("Missing ID or review"); // Error handling
+        return res.status(400).send("Missing ID or review"); 
     }
     try{
     await db.query('update book_review set review = $1 where id = $2', [review, id])

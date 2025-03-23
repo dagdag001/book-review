@@ -1,36 +1,7 @@
-
-
 .nav li > a:hover {
-    color: purple !important;
+    color: #a683e3 !important;
 }
 
-/* edit button */
-.hidden {
-    display: none;
+.logo {
+ color: #d683e3;
 }
-
-.edit-textarea {
-    width: 100%;
-    min-height: 80px;
-    max-height: 200px;
-    resize: vertical;
-    font-size: 16px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.edit-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.edit-btn:hover {
-    background-color: #0056b3;
-}
-/* edit button */

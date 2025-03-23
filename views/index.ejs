@@ -3,85 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Book Reviews</title>
     <link rel="stylesheet" href="/styles/main.css">
-
+    <link rel="stylesheet" href="/styles/home.css">
 </head>
 <body>
     <%- include('partials/header.ejs') %>
-    <form action="/new" method="get">
-        <button>Review new book</button>
-    </form>
 
-    <% response.forEach(value => { %>
-        <h1 id="title<%=value.id%>"><%= value.book_name %></h1>
-        <p><%= value.review %></p>
-        <img src="<%= value.cover %>" >
-   
-        <form action="/delete" method="post">
-            <input type="hidden" name="deleteItemId" value="<%= value.id %>">
-            <button type="submit">Delete</button>
+    <div class="content">
+        <form action="/new" method="get" class="form_container">
+            <button type="submit" class="btn btn-outline-dark" id="new_book">Review New Book</button>
         </form>
-        
-        
-        <form class="edit" action="/edit" method="post">
-            <input type="hidden" name="editItemId" value="<%= value.id %>">
-            
-            <!-- Textarea for editing review -->
-            <textarea id="input<%=value.id%>" name="editReview" class="hidden edit-textarea"
-                oninput="autoResize(this)"><%= value.review %></textarea>
-            
-            <button id="done<%=value.id%>" class="edit-btn hidden" type="submit">✅ Save</button>
-        </form>
-        
-        <!-- Edit button -->
-        <button id="edit<%=value.id%>" class="edit-btn" onclick="toggleEdit('<%=value.id%>')">
-            ✏️ Edit
-        </button>
-        
-        
-        
-  
-        
-    <% }) %>
-    
+
+        <% response.forEach(value => { %>
+        <div class="form_container">
+            <div class="list-group">
+                <div id="text<%= value.id %>" class="list-group-item">
+                    <div class="top-section">
+                        <h6 class="mb-0"><%= value.book_name.slice(0,1).toUpperCase() + value.book_name.slice(1).toLowerCase() %></h6>
+                        <small class="opacity-50"><%= value.post_date %></small>
+                    </div>
+                    <div class="cover-and-review">
+                        <img src="<%= value.cover %>" alt="Book Cover">
+                        <div class="review-text">
+                            <% let shortReview = value.review.length > 150 ? value.review.slice(0, 150) + "..." : value.review; %>
+                            <%- shortReview %>
+                            <% if (value.review.length > 150) { %>
+                                <a href="/post/<%= value.id %>" class="more-link">More</a>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <form action="/delete" method="post" onsubmit="return confirm('Are you sure you want to delete this review?');">
+                            <input type="hidden" name="deleteItemId" value="<%= value.id %>">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                        </form>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleEdit('<%= value.id %>')">Edit</button>
+                    </div>
+                </div>
+                <form id="form<%= value.id %>" action="/edit" method="post" class="edit-form">
+                    <input type="hidden" name="updatedItemId" value="<%= value.id %>"> 
+                    <textarea id="input<%= value.id %>" name="updatedItemTitle" class="edit-textarea"><%= value.review %></textarea>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-outline-success btn-sm">✅ Save</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="cancelEdit('<%= value.id %>')">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <% }) %>
+    </div>
+
+    <%- include('partials/footer.ejs') %>
+
     <script>
-        // function handler(id) {
-        //   document.getElementById("title" + id).setAttribute("hidden", true)
-        //   document.getElementById("edit" + id).setAttribute("hidden", true)
-        //   document.getElementById("done" + id).removeAttribute("hidden")
-        //   document.getElementById("input" + id).removeAttribute("hidden")
-        // }
+        // for the edit button
         function toggleEdit(id) {
-    let title = document.getElementById("title" + id);
-    let editBtn = document.getElementById("edit" + id);
-    let textarea = document.getElementById("input" + id);
-    let saveBtn = document.getElementById("done" + id);
-
-    let isEditing = !textarea.classList.contains("hidden");
-
-    if (isEditing) {
-        // Cancel editing
-        title.classList.remove("hidden");
-        textarea.classList.add("hidden");
-        saveBtn.classList.add("hidden");
-        editBtn.innerText = "✏️ Edit";
-    } else {
-        // Start editing
-        title.classList.add("hidden");
-        textarea.classList.remove("hidden");
-        saveBtn.classList.remove("hidden");
-        editBtn.innerText = "❌ Cancel";
-        autoResize(textarea);
-    }
-}
-
-function autoResize(textarea) {
-    textarea.style.height = "auto";
-    textarea.style.height = textarea.scrollHeight + "px";
-}
-
-
-      </script>
+            document.getElementById(`text${id}`).classList.add("hidden");
+            document.getElementById(`form${id}`).style.display = "flex";
+        }
+        function cancelEdit(id) {
+            document.getElementById(`text${id}`).classList.remove("hidden");
+            document.getElementById(`form${id}`).style.display = "none";
+        }
+    </script>
 </body>
 </html>
